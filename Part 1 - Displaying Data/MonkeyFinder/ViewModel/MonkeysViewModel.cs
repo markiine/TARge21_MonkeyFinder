@@ -6,10 +6,13 @@ public partial class MonkeysViewModel : BaseViewModel
     MonkeyService monkeyService;
     public ObservableCollection<Monkey> Monkeys { get; } = new();
 
-    public MonkeysViewModel(MonkeyService monkeyService)
+    IConnectivity connectivity;
+
+    public MonkeysViewModel(MonkeyService monkeyService, IConnectivity connectivity)
     {
         Title = "Monkey Finder";
         this.monkeyService = monkeyService;
+        this.connectivity = connectivity;
     }
 
     [RelayCommand]
@@ -33,6 +36,13 @@ public partial class MonkeysViewModel : BaseViewModel
 
         try
         {
+            if (connectivity.NetworkAccess != NetworkAccess.Internet)
+            {
+                await Shell.Current.DisplayAlert("Internet issue!",
+                    $"Check your internet connection and try again.", "OK");
+                return;
+            }
+
             IsBusy = true;
             var monkeys = await monkeyService.GetMonkeys();
 
